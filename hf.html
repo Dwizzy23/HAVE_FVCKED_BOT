@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Audio Converter & Splitter</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(58, 10, 201, 0.45), transparent 35%),
+        linear-gradient(135deg, #07070d, #121225 55%, #080811);
+      color: #fff;
+      padding: 32px;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      color: #7c4dff;
+    }
+
+    nav a {
+      color: #cfcff8;
+      text-decoration: none;
+      margin-left: 24px;
+      font-size: 14px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 32px;
+      align-items: center;
+      margin-bottom: 36px;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(124, 77, 255, 0.15);
+      color: #c9b8ff;
+      border: 1px solid rgba(124, 77, 255, 0.35);
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+
+    h1 {
+      font-size: clamp(42px, 6vw, 76px);
+      line-height: 0.95;
+      letter-spacing: -4px;
+      margin-bottom: 22px;
+    }
+
+    .gradient {
+      background: linear-gradient(90deg, #fff, #9b7cff, #42f5b0);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      color: #c9c9db;
+      font-size: 18px;
+      line-height: 1.6;
+      max-width: 640px;
+      margin-bottom: 28px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    button, .button {
+      border: none;
+      cursor: pointer;
+      border-radius: 18px;
+      padding: 15px 22px;
+      font-weight: 800;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, #7c4dff, #3a0ac9);
+      color: #fff;
+      box-shadow: 0 18px 45px rgba(58, 10, 201, 0.42);
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    button:hover, .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.075);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    .panel h2 {
+      font-size: 24px;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      color: #d7d7ef;
+      font-size: 13px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    input, select {
+      width: 100%;
+      background: rgba(7, 7, 13, 0.65);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .dropzone {
+      border: 1.5px dashed rgba(255, 255, 255, 0.25);
+      border-radius: 22px;
+      padding: 26px;
+      text-align: center;
+      color: #c9c9db;
+      margin-bottom: 18px;
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .dropzone strong {
+      color: #fff;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 14px;
+      border-radius: 16px;
+      color: #eee;
+    }
+
+    .check input {
+      width: auto;
+      margin: 0;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin: 34px 0;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 22px;
+    }
+
+    .icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #7c4dff, #42f5b0);
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .card p {
+      color: #bdbdd4;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .status {
+      margin-top: 18px;
+      background: rgba(0, 0, 0, 0.22);
+      border-radius: 18px;
+      padding: 16px;
+      display: none;
+    }
+
+    .bar {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+
+    .fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #7c4dff, #42f5b0);
+      transition: width 0.4s;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .result-file {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 13px;
+    }
+
+    footer {
+      color: #8787a6;
+      text-align: center;
+      margin-top: 36px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      body { padding: 20px; }
+      header { flex-direction: column; gap: 18px; align-items: flex-start; }
+      nav a { margin-left: 0; margin-right: 18px; }
+      .hero, .features { grid-template-columns: 1fr; }
+      .results, .options, .grid-2 { grid-template-columns: 1fr; }
+      h1 { letter-spacing: -2px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">Audio<span>AI</span></div>
+      <nav>
+        <a href="#converter">Konwerter</a>
+        <a href="#splitter">Splitter AI</a>
+        <a href="#api">API</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="badge">YT / SoundCloud / Upload → WAV + stem splitter</div>
+        <h1>Konwertuj audio i dziel ścieżki przez <span class="gradient">AI</span></h1>
+        <p>
+          Wklej link albo wrzuć plik. System przygotuje audio w WAV i rozdzieli je na vocal, drums, bass oraz melody.
+          Używaj tylko materiałów, do których masz prawa.
+        </p>
+        <div class="buttons">
+          <a class="button primary" href="#converter">Odpal konwerter</a>
+          <a class="button secondary" href="#splitter">Zobacz stem splitter</a>
+        </div>
+      </div>
+
+      <div class="panel" id="converter">
+        <h2>Nowe zadanie</h2>
+
+        <label>Link YouTube / SoundCloud</label>
+        <input id="audioLink" type="url" placeholder="https://youtube.com/... albo https://soundcloud.com/..." />
+
+        <div class="dropzone">
+          <strong>Przeciągnij plik audio</strong><br />
+          MP3, WAV, FLAC, M4A — maks. 250 MB
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label>Format wyjściowy</label>
+            <select id="format">
+              <option>WAV 44.1 kHz</option>
+              <option>WAV 48 kHz</option>
+              <option>MP3 320 kbps</option>
+              <option>FLAC</option>
+            </select>
+          </div>
+          <div>
+            <label>Jakość separacji</label>
+            <select id="quality">
+              <option>Fast</option>
+              <option selected>Studio</option>
+              <option>Ultra AI</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="options" id="splitter">
+          <label class="check"><input type="checkbox" checked /> Vocal</label>
+          <label class="check"><input type="checkbox" checked /> Drums</label>
+          <label class="check"><input type="checkbox" checked /> Bass</label>
+          <label class="check"><input type="checkbox" checked /> Melody</label>
+        </div>
+
+        <button class="primary" style="width:100%" onclick="startJob()">Konwertuj i podziel</button>
+
+        <div class="status" id="statusBox">
+          <strong id="statusText">Przygotowywanie...</strong>
+          <div class="bar"><div class="fill" id="fill"></div></div>
+          <small id="percent">0%</small>
+          <div class="results" id="results"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="api">
+      <div class="card">
+        <div class="icon">🎧</div>
+        <h3>YT / SC link</h3>
+        <p>Frontend pod wklejanie linków. Pobieranie musi obsłużyć backend zgodnie z prawem i regulaminami platform.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🧬</div>
+        <h3>AI stem splitter</h3>
+        <p>Podział na vocal, drums, bass i melody przez modele typu Demucs / Spleeter / własne API.</p>
+      </div>
+      <div class="card">
+        <div class="icon">⚡</div>
+        <h3>Szybki workflow</h3>
+        <p>Jedno zadanie: konwersja, separacja, eksport paczki ZIP i gotowe pliki do pobrania.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔐</div>
+        <h3>Bezpieczne użycie</h3>
+        <p>Najlepiej dopuścić upload własnych plików albo linki do materiałów, których użytkownik jest właścicielem.</p>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 AudioAI — demo frontendu. Backend: Node/Python + kolejka zadań + AI audio separation.
+    </footer>
+  </div>
+
+  <script>
+    function startJob() {
+      const statusBox = document.getElementById('statusBox');
+      const statusText = document.getElementById('statusText');
+      const fill = document.getElementById('fill');
+      const percent = document.getElementById('percent');
+      const results = document.getElementById('results');
+
+      statusBox.style.display = 'block';
+      results.innerHTML = '';
+
+      let progress = 0;
+      const steps = [
+        'Analiza źródła audio...',
+        'Konwersja do WAV...',
+        'Separacja vocal...',
+        'Separacja drums...',
+        'Separacja bass...',
+        'Separacja melody...',
+        'Pakowanie plików...'
+      ];
+
+      const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 13) + 7;
+        if (progress > 100) progress = 100;
+
+        fill.style.width = progress + '%';
+        percent.textContent = progress + '%';
+        statusText.textContent = steps[Math.min(Math.floor(progress / 16), steps.length - 1)];
+
+        if (progress === 100) {
+          clearInterval(interval);
+          statusText.textContent = 'Gotowe — pliki wygenerowane';
+          results.innerHTML = `
+            <div class="result-file">🎙 vocal.wav</div>
+            <div class="result-file">🥁 drums.wav</div>
+            <div class="result-file">🎸 bass.wav</div>
+            <div class="result-file">🎹 melody.wav</div>
+          `;
+        }
+      }, 500);
+    }
+  </script>
+</body>
+</html>
