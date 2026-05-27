@@ -3,433 +3,793 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Audio Converter & Splitter</title>
+  <title>AudioAI Converter & Stem Splitter</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Inter, Arial, sans-serif;
+    :root {
+      --bg: #070710;
+      --bg2: #111122;
+      --main: #3a0ac9;
+      --main2: #8b5cff;
+      --green: #41f5b4;
+      --text: #ffffff;
+      --muted: #b9b9ce;
+      --card: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.14);
+      --danger: #ff4d6d;
+      --warning: #ffd166;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       min-height: 100vh;
       background:
-        radial-gradient(circle at top left, rgba(58, 10, 201, 0.45), transparent 35%),
-        linear-gradient(135deg, #07070d, #121225 55%, #080811);
-      color: #fff;
-      padding: 32px;
+        radial-gradient(circle at 10% 10%, rgba(58,10,201,.45), transparent 32%),
+        radial-gradient(circle at 90% 20%, rgba(65,245,180,.18), transparent 28%),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
+      padding: 24px;
     }
 
-    .app {
-      max-width: 1180px;
-      margin: 0 auto;
-    }
+    .app { max-width: 1250px; margin: 0 auto; }
 
     header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 48px;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 30px;
     }
 
     .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 950;
       font-size: 24px;
-      font-weight: 900;
       letter-spacing: -1px;
     }
 
-    .logo span {
-      color: #7c4dff;
+    .logo-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--main), var(--green));
+      display: grid;
+      place-items: center;
+      box-shadow: 0 20px 50px rgba(58,10,201,.35);
     }
 
-    nav a {
-      color: #cfcff8;
-      text-decoration: none;
-      margin-left: 24px;
-      font-size: 14px;
+    nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    nav button {
+      background: rgba(255,255,255,.06);
+      color: #ddd;
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    nav button.active {
+      background: linear-gradient(135deg, var(--main), var(--main2));
+      color: white;
+      border-color: transparent;
     }
 
     .hero {
       display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 32px;
-      align-items: center;
-      margin-bottom: 36px;
+      grid-template-columns: .95fr 1.05fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 24px;
     }
+
+    .glass {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 24px 80px rgba(0,0,0,.32);
+    }
+
+    .intro { padding: 38px; min-height: 100%; }
 
     .badge {
       display: inline-flex;
-      padding: 8px 14px;
+      padding: 8px 13px;
       border-radius: 999px;
-      background: rgba(124, 77, 255, 0.15);
-      color: #c9b8ff;
-      border: 1px solid rgba(124, 77, 255, 0.35);
-      margin-bottom: 18px;
+      background: rgba(139,92,255,.16);
+      color: #d8cbff;
+      border: 1px solid rgba(139,92,255,.34);
       font-size: 13px;
+      margin-bottom: 22px;
     }
 
     h1 {
-      font-size: clamp(42px, 6vw, 76px);
-      line-height: 0.95;
+      font-size: clamp(38px, 6vw, 72px);
+      line-height: .95;
       letter-spacing: -4px;
       margin-bottom: 22px;
     }
 
     .gradient {
-      background: linear-gradient(90deg, #fff, #9b7cff, #42f5b0);
+      background: linear-gradient(90deg, white, #a990ff, var(--green));
       -webkit-background-clip: text;
       color: transparent;
     }
 
-    .hero p {
-      color: #c9c9db;
-      font-size: 18px;
-      line-height: 1.6;
+    .intro p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
       max-width: 640px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
-    .buttons {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 12px;
+      margin-top: 28px;
     }
 
-    button, .button {
-      border: none;
-      cursor: pointer;
-      border-radius: 18px;
-      padding: 15px 22px;
-      font-weight: 800;
-      font-size: 15px;
-      transition: 0.2s;
+    .stat {
+      padding: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      border-radius: 20px;
     }
 
-    .primary {
-      background: linear-gradient(135deg, #7c4dff, #3a0ac9);
-      color: #fff;
-      box-shadow: 0 18px 45px rgba(58, 10, 201, 0.42);
-    }
+    .stat strong { display: block; font-size: 23px; }
+    .stat span { color: var(--muted); font-size: 12px; }
 
-    .secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-    }
+    .panel { padding: 24px; }
 
-    button:hover, .button:hover {
-      transform: translateY(-2px);
-    }
-
-    .panel {
-      background: rgba(255, 255, 255, 0.075);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      backdrop-filter: blur(20px);
-      border-radius: 28px;
-      padding: 24px;
-      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
-    }
-
-    .panel h2 {
-      font-size: 24px;
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
       margin-bottom: 18px;
     }
+
+    .tab {
+      padding: 13px 10px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color: white;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .tab.active { background: linear-gradient(135deg, var(--main), var(--main2)); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     label {
       display: block;
-      color: #d7d7ef;
+      color: #deddf0;
       font-size: 13px;
+      font-weight: 800;
       margin-bottom: 8px;
-      font-weight: 700;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
-      background: rgba(7, 7, 13, 0.65);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0,0,0,.35);
+      color: white;
+      border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 15px;
-      margin-bottom: 16px;
+      padding: 14px;
       outline: none;
+      margin-bottom: 14px;
     }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    textarea { min-height: 90px; resize: vertical; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--main2);
+      box-shadow: 0 0 0 4px rgba(139,92,255,.12);
     }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
 
     .dropzone {
-      border: 1.5px dashed rgba(255, 255, 255, 0.25);
-      border-radius: 22px;
-      padding: 26px;
-      text-align: center;
-      color: #c9c9db;
-      margin-bottom: 18px;
-      background: rgba(255, 255, 255, 0.045);
-    }
-
-    .dropzone strong {
-      color: #fff;
-    }
-
-    .options {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .check {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255, 255, 255, 0.06);
-      padding: 14px;
-      border-radius: 16px;
-      color: #eee;
-    }
-
-    .check input {
-      width: auto;
-      margin: 0;
-    }
-
-    .features {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
-      margin: 34px 0;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      min-height: 145px;
+      border: 2px dashed rgba(255,255,255,.25);
       border-radius: 24px;
-      padding: 22px;
-    }
-
-    .icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 15px;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, #7c4dff, #42f5b0);
-      margin-bottom: 16px;
-      font-size: 22px;
+      text-align: center;
+      padding: 22px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      background: rgba(255,255,255,.045);
+      cursor: pointer;
+      transition: .2s;
     }
 
-    .card h3 {
-      margin-bottom: 10px;
-      font-size: 18px;
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--green);
+      background: rgba(65,245,180,.08);
     }
 
-    .card p {
-      color: #bdbdd4;
-      line-height: 1.55;
-      font-size: 14px;
+    .dropzone strong { color: white; display: block; margin-bottom: 5px; }
+    #fileInput { display: none; }
+
+    .stem-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 10px;
+      margin: 8px 0 16px;
     }
 
-    .status {
-      margin-top: 18px;
-      background: rgba(0, 0, 0, 0.22);
+    .stem {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      padding: 13px;
+      border-radius: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .stem input { width: auto; margin: 0; accent-color: var(--main2); }
+
+    .btn {
+      border: none;
       border-radius: 18px;
-      padding: 16px;
-      display: none;
+      padding: 15px 18px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .2s;
     }
 
-    .bar {
-      height: 10px;
-      background: rgba(255, 255, 255, 0.12);
-      border-radius: 99px;
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-main {
+      background: linear-gradient(135deg, var(--main), var(--main2));
+      color: white;
+      box-shadow: 0 20px 40px rgba(58,10,201,.34);
+    }
+
+    .btn-soft {
+      background: rgba(255,255,255,.08);
+      color: white;
+      border: 1px solid var(--border);
+    }
+
+    .full { width: 100%; }
+
+    .alert {
+      display: none;
+      padding: 13px 15px;
+      border-radius: 16px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .alert.error { background: rgba(255,77,109,.12); border: 1px solid rgba(255,77,109,.35); color: #ffd2dc; }
+    .alert.ok { background: rgba(65,245,180,.1); border: 1px solid rgba(65,245,180,.32); color: #d2ffef; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .section { padding: 24px; }
+    .section h2 { margin-bottom: 14px; font-size: 24px; }
+
+    .job-list { display: grid; gap: 14px; }
+
+    .job {
+      background: rgba(255,255,255,.055);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 16px;
+    }
+
+    .job-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .job-title { font-weight: 900; word-break: break-word; }
+    .job-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(139,92,255,.17);
+      color: #dacfff;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .progress {
+      height: 11px;
+      background: rgba(255,255,255,.1);
+      border-radius: 999px;
       overflow: hidden;
       margin: 12px 0;
     }
 
-    .fill {
-      width: 0%;
+    .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #7c4dff, #42f5b0);
-      transition: width 0.4s;
+      width: 0%;
+      background: linear-gradient(90deg, var(--main2), var(--green));
+      transition: width .3s;
     }
 
-    .results {
+    .files {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 14px;
+      grid-template-columns: repeat(4,1fr);
+      gap: 8px;
+      margin-top: 12px;
     }
 
-    .result-file {
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 14px;
-      font-size: 13px;
+    .file {
+      background: rgba(0,0,0,.26);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 11px;
+      font-size: 12px;
     }
 
-    footer {
-      color: #8787a6;
+    .file button {
+      margin-top: 8px;
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      padding: 8px;
+      cursor: pointer;
+      background: rgba(255,255,255,.1);
+      color: white;
+      font-weight: 700;
+    }
+
+    .api-box {
+      background: rgba(0,0,0,.3);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 18px;
+      overflow: auto;
+      color: #d8d8ef;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .small { color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+    .empty {
+      border: 1px dashed rgba(255,255,255,.22);
+      border-radius: 22px;
+      padding: 26px;
+      color: var(--muted);
       text-align: center;
-      margin-top: 36px;
-      font-size: 13px;
     }
 
-    @media (max-width: 900px) {
-      body { padding: 20px; }
-      header { flex-direction: column; gap: 18px; align-items: flex-start; }
-      nav a { margin-left: 0; margin-right: 18px; }
-      .hero, .features { grid-template-columns: 1fr; }
-      .results, .options, .grid-2 { grid-template-columns: 1fr; }
+    footer { text-align: center; color: #8585a0; margin: 32px 0 8px; font-size: 13px; }
+
+    @media (max-width: 980px) {
+      body { padding: 16px; }
+      .hero, .workspace { grid-template-columns: 1fr; }
+      .stats, .grid-3, .stem-grid, .files { grid-template-columns: 1fr 1fr; }
       h1 { letter-spacing: -2px; }
+    }
+
+    @media (max-width: 560px) {
+      header { align-items: flex-start; flex-direction: column; }
+      .tabs, .grid-2, .stats, .stem-grid, .files { grid-template-columns: 1fr; }
+      .intro, .panel, .section { padding: 18px; }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header>
-      <div class="logo">Audio<span>AI</span></div>
+      <div class="logo">
+        <div class="logo-mark">🎛️</div>
+        <div>AudioAI <span class="gradient">Studio</span></div>
+      </div>
       <nav>
-        <a href="#converter">Konwerter</a>
-        <a href="#splitter">Splitter AI</a>
-        <a href="#api">API</a>
+        <button class="active" onclick="scrollToId('start')">Start</button>
+        <button onclick="scrollToId('jobs')">Zadania</button>
+        <button onclick="scrollToId('api')">Backend API</button>
       </nav>
     </header>
 
-    <section class="hero">
-      <div>
-        <div class="badge">YT / SoundCloud / Upload → WAV + stem splitter</div>
-        <h1>Konwertuj audio i dziel ścieżki przez <span class="gradient">AI</span></h1>
+    <main id="start" class="hero">
+      <section class="intro glass">
+        <div class="badge">YT / SoundCloud / plik audio → WAV + AI stem splitter</div>
+        <h1>Konwerter audio i splitter stemów <span class="gradient">AI</span></h1>
         <p>
-          Wklej link albo wrzuć plik. System przygotuje audio w WAV i rozdzieli je na vocal, drums, bass oraz melody.
-          Używaj tylko materiałów, do których masz prawa.
+          Wklej link YouTube/SoundCloud albo wrzuć własny plik. Panel symuluje konwersję do WAV oraz podział na vocal, drums, bass i melody.
+          To jest gotowy frontend pod bota/aplikację — backend podpinasz pod endpoint <b>/api/process</b>.
         </p>
-        <div class="buttons">
-          <a class="button primary" href="#converter">Odpal konwerter</a>
-          <a class="button secondary" href="#splitter">Zobacz stem splitter</a>
+        <div class="stats">
+          <div class="stat"><strong>4</strong><span>stemy audio</span></div>
+          <div class="stat"><strong>WAV</strong><span>format studyjny</span></div>
+          <div class="stat"><strong>API</strong><span>gotowy schemat</span></div>
         </div>
-      </div>
+      </section>
 
-      <div class="panel" id="converter">
-        <h2>Nowe zadanie</h2>
+      <section class="panel glass">
+        <div class="tabs">
+          <button class="tab active" onclick="setTab('link')">Link</button>
+          <button class="tab" onclick="setTab('upload')">Upload</button>
+          <button class="tab" onclick="setTab('advanced')">Advanced</button>
+        </div>
 
-        <label>Link YouTube / SoundCloud</label>
-        <input id="audioLink" type="url" placeholder="https://youtube.com/... albo https://soundcloud.com/..." />
+        <div id="alert" class="alert"></div>
 
-        <div class="dropzone">
-          <strong>Przeciągnij plik audio</strong><br />
-          MP3, WAV, FLAC, M4A — maks. 250 MB
+        <div id="tab-link" class="tab-content active">
+          <label>Link YouTube / SoundCloud</label>
+          <input id="audioLink" type="url" placeholder="np. https://youtube.com/watch?v=... albo https://soundcloud.com/..." />
+          <p class="small">Frontend nie pobiera sam z YT/SC. Link jest wysyłany do backendu, który musi obsłużyć pobranie zgodnie z prawem i regulaminami.</p>
+        </div>
+
+        <div id="tab-upload" class="tab-content">
+          <input id="fileInput" type="file" accept="audio/*,.wav,.mp3,.flac,.m4a,.ogg" />
+          <div id="dropzone" class="dropzone" onclick="document.getElementById('fileInput').click()">
+            <div>
+              <strong>Kliknij albo przeciągnij plik audio</strong>
+              MP3, WAV, FLAC, M4A, OGG<br />
+              <span id="fileName">Nie wybrano pliku</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-advanced" class="tab-content">
+          <div class="grid-2">
+            <div>
+              <label>Nazwa projektu</label>
+              <input id="projectName" placeholder="np. remix_vkie" />
+            </div>
+            <div>
+              <label>Tryb AI</label>
+              <select id="mode">
+                <option value="fast">Fast</option>
+                <option value="studio" selected>Studio</option>
+                <option value="ultra">Ultra</option>
+              </select>
+            </div>
+          </div>
+          <label>Notatka dla backendu</label>
+          <textarea id="note" placeholder="np. zostaw wokal czysty, mocne drumsy, eksport WAV 48 kHz..."></textarea>
         </div>
 
         <div class="grid-2">
           <div>
-            <label>Format wyjściowy</label>
+            <label>Format eksportu</label>
             <select id="format">
-              <option>WAV 44.1 kHz</option>
-              <option>WAV 48 kHz</option>
-              <option>MP3 320 kbps</option>
-              <option>FLAC</option>
+              <option value="wav_441">WAV 44.1 kHz</option>
+              <option value="wav_48" selected>WAV 48 kHz</option>
+              <option value="mp3_320">MP3 320 kbps</option>
+              <option value="flac">FLAC</option>
             </select>
           </div>
           <div>
-            <label>Jakość separacji</label>
-            <select id="quality">
-              <option>Fast</option>
-              <option selected>Studio</option>
-              <option>Ultra AI</option>
+            <label>Typ zadania</label>
+            <select id="taskType">
+              <option value="convert_split" selected>Konwertuj + split</option>
+              <option value="convert_only">Tylko konwertuj</option>
+              <option value="split_only">Tylko split</option>
             </select>
           </div>
         </div>
 
-        <div class="options" id="splitter">
-          <label class="check"><input type="checkbox" checked /> Vocal</label>
-          <label class="check"><input type="checkbox" checked /> Drums</label>
-          <label class="check"><input type="checkbox" checked /> Bass</label>
-          <label class="check"><input type="checkbox" checked /> Melody</label>
+        <label>Stemy do wygenerowania</label>
+        <div class="stem-grid">
+          <label class="stem"><input class="stemCheck" type="checkbox" value="vocal" checked /> 🎙 Vocal</label>
+          <label class="stem"><input class="stemCheck" type="checkbox" value="drums" checked /> 🥁 Drums</label>
+          <label class="stem"><input class="stemCheck" type="checkbox" value="bass" checked /> 🎸 Bass</label>
+          <label class="stem"><input class="stemCheck" type="checkbox" value="melody" checked /> 🎹 Melody</label>
         </div>
 
-        <button class="primary" style="width:100%" onclick="startJob()">Konwertuj i podziel</button>
+        <button class="btn btn-main full" onclick="createJob()">Konwertuj i podziel audio</button>
+      </section>
+    </main>
 
-        <div class="status" id="statusBox">
-          <strong id="statusText">Przygotowywanie...</strong>
-          <div class="bar"><div class="fill" id="fill"></div></div>
-          <small id="percent">0%</small>
-          <div class="results" id="results"></div>
+    <section class="workspace">
+      <div id="jobs" class="section glass">
+        <h2>Aktywne zadania</h2>
+        <div id="jobList" class="job-list">
+          <div class="empty">Brak zadań. Dodaj link albo plik i kliknij „Konwertuj”.</div>
         </div>
       </div>
-    </section>
 
-    <section class="features" id="api">
-      <div class="card">
-        <div class="icon">🎧</div>
-        <h3>YT / SC link</h3>
-        <p>Frontend pod wklejanie linków. Pobieranie musi obsłużyć backend zgodnie z prawem i regulaminami platform.</p>
-      </div>
-      <div class="card">
-        <div class="icon">🧬</div>
-        <h3>AI stem splitter</h3>
-        <p>Podział na vocal, drums, bass i melody przez modele typu Demucs / Spleeter / własne API.</p>
-      </div>
-      <div class="card">
-        <div class="icon">⚡</div>
-        <h3>Szybki workflow</h3>
-        <p>Jedno zadanie: konwersja, separacja, eksport paczki ZIP i gotowe pliki do pobrania.</p>
-      </div>
-      <div class="card">
-        <div class="icon">🔐</div>
-        <h3>Bezpieczne użycie</h3>
-        <p>Najlepiej dopuścić upload własnych plików albo linki do materiałów, których użytkownik jest właścicielem.</p>
-      </div>
+      <aside id="api" class="section glass">
+        <h2>Szkielet backendu</h2>
+        <p class="small" style="margin-bottom: 12px;">
+          Ten frontend możesz podpiąć pod Node.js/Python. W kodzie znajdziesz funkcję <b>sendToBackend()</b> — teraz działa jako demo/symulacja.
+        </p>
+        <div class="api-box">POST /api/process
+Content-Type: multipart/form-data albo application/json
+
+{
+  "sourceType": "link | file",
+  "url": "https://...",
+  "format": "wav_48",
+  "taskType": "convert_split",
+  "stems": ["vocal", "drums", "bass", "melody"],
+  "mode": "studio",
+  "note": "..."
+}
+
+Backend polecany:
+- Python FastAPI
+- Demucs do separacji stemów
+- FFmpeg do WAV/MP3/FLAC
+- kolejka: Redis/BullMQ/Celery
+- storage: lokalnie albo S3/R2</div>
+      </aside>
     </section>
 
     <footer>
-      © 2026 AudioAI — demo frontendu. Backend: Node/Python + kolejka zadań + AI audio separation.
+      Demo frontend — używaj tylko audio, do którego masz prawa. YouTube/SoundCloud mogą mieć własne regulaminy pobierania.
     </footer>
   </div>
 
   <script>
-    function startJob() {
-      const statusBox = document.getElementById('statusBox');
-      const statusText = document.getElementById('statusText');
-      const fill = document.getElementById('fill');
-      const percent = document.getElementById('percent');
-      const results = document.getElementById('results');
+    let currentTab = 'link';
+    let selectedFile = null;
+    let jobs = [];
 
-      statusBox.style.display = 'block';
-      results.innerHTML = '';
+    function scrollToId(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
 
-      let progress = 0;
-      const steps = [
-        'Analiza źródła audio...',
-        'Konwersja do WAV...',
-        'Separacja vocal...',
-        'Separacja drums...',
-        'Separacja bass...',
-        'Separacja melody...',
-        'Pakowanie plików...'
-      ];
+    function setTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+      hideAlert();
+    }
 
-      const interval = setInterval(() => {
-        progress += Math.floor(Math.random() * 13) + 7;
-        if (progress > 100) progress = 100;
+    function showAlert(type, text) {
+      const alert = document.getElementById('alert');
+      alert.className = 'alert ' + type;
+      alert.textContent = text;
+      alert.style.display = 'block';
+    }
 
-        fill.style.width = progress + '%';
-        percent.textContent = progress + '%';
-        statusText.textContent = steps[Math.min(Math.floor(progress / 16), steps.length - 1)];
+    function hideAlert() {
+      const alert = document.getElementById('alert');
+      alert.style.display = 'none';
+    }
 
-        if (progress === 100) {
-          clearInterval(interval);
-          statusText.textContent = 'Gotowe — pliki wygenerowane';
-          results.innerHTML = `
-            <div class="result-file">🎙 vocal.wav</div>
-            <div class="result-file">🥁 drums.wav</div>
-            <div class="result-file">🎸 bass.wav</div>
-            <div class="result-file">🎹 melody.wav</div>
-          `;
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+
+    fileInput.addEventListener('change', function () {
+      if (this.files && this.files[0]) setSelectedFile(this.files[0]);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, e => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, e => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', e => {
+      const file = e.dataTransfer.files[0];
+      if (file) setSelectedFile(file);
+    });
+
+    function setSelectedFile(file) {
+      selectedFile = file;
+      document.getElementById('fileName').textContent = file.name + ' • ' + formatBytes(file.size);
+      showAlert('ok', 'Plik dodany: ' + file.name);
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes) return '0 B';
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    function getSelectedStems() {
+      return Array.from(document.querySelectorAll('.stemCheck'))
+        .filter(ch => ch.checked)
+        .map(ch => ch.value);
+    }
+
+    function isValidAudioLink(url) {
+      try {
+        const u = new URL(url);
+        const host = u.hostname.toLowerCase();
+        return host.includes('youtube.com') || host.includes('youtu.be') || host.includes('soundcloud.com');
+      } catch {
+        return false;
+      }
+    }
+
+    function createJob() {
+      hideAlert();
+
+      const link = document.getElementById('audioLink').value.trim();
+      const stems = getSelectedStems();
+      const taskType = document.getElementById('taskType').value;
+
+      if (currentTab === 'link' && !isValidAudioLink(link)) {
+        showAlert('error', 'Wklej poprawny link YouTube albo SoundCloud.');
+        return;
+      }
+
+      if (currentTab === 'upload' && !selectedFile) {
+        showAlert('error', 'Najpierw wybierz albo przeciągnij plik audio.');
+        return;
+      }
+
+      if (taskType !== 'convert_only' && stems.length === 0) {
+        showAlert('error', 'Wybierz minimum jeden stem do wygenerowania.');
+        return;
+      }
+
+      const projectName = document.getElementById('projectName').value.trim();
+      const sourceName = currentTab === 'upload'
+        ? selectedFile.name
+        : link;
+
+      const job = {
+        id: Date.now(),
+        title: projectName || cleanTitle(sourceName),
+        sourceType: currentTab === 'upload' ? 'file' : 'link',
+        source: sourceName,
+        format: document.getElementById('format').value,
+        taskType,
+        stems,
+        mode: document.getElementById('mode').value,
+        note: document.getElementById('note').value.trim(),
+        progress: 0,
+        status: 'W kolejce',
+        done: false
+      };
+
+      jobs.unshift(job);
+      renderJobs();
+      sendToBackend(job);
+      simulateProgress(job.id);
+      showAlert('ok', 'Zadanie dodane. Backend jest teraz symulowany w przeglądarce.');
+    }
+
+    function cleanTitle(text) {
+      return text
+        .replace('https://', '')
+        .replace('http://', '')
+        .slice(0, 55);
+    }
+
+    async function sendToBackend(job) {
+      // TU PODPINASZ PRAWDZIWY BACKEND.
+      // Przykład dla JSON:
+      // await fetch('/api/process', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(job)
+      // });
+      console.log('Payload do backendu:', job);
+    }
+
+    function simulateProgress(jobId) {
+      const timer = setInterval(() => {
+        const job = jobs.find(j => j.id === jobId);
+        if (!job) return clearInterval(timer);
+
+        const stages = [
+          'Analiza audio',
+          'Pobieranie / wczytywanie',
+          'Konwersja przez FFmpeg',
+          'Separacja AI',
+          'Eksport stemów',
+          'Pakowanie ZIP'
+        ];
+
+        job.progress += Math.floor(Math.random() * 10) + 5;
+        if (job.progress >= 100) {
+          job.progress = 100;
+          job.status = 'Gotowe';
+          job.done = true;
+          clearInterval(timer);
+        } else {
+          job.status = stages[Math.min(Math.floor(job.progress / 17), stages.length - 1)];
         }
-      }, 500);
+        renderJobs();
+      }, 650);
+    }
+
+    function renderJobs() {
+      const list = document.getElementById('jobList');
+      if (!jobs.length) {
+        list.innerHTML = '<div class="empty">Brak zadań. Dodaj link albo plik i kliknij „Konwertuj”.</div>';
+        return;
+      }
+
+      list.innerHTML = jobs.map(job => {
+        const files = getOutputFiles(job).map(file => `
+          <div class="file">
+            ${file.icon} ${file.name}
+            <button onclick="downloadDemo('${file.name}')">Pobierz</button>
+          </div>
+        `).join('');
+
+        return `
+          <div class="job">
+            <div class="job-top">
+              <div>
+                <div class="job-title">${escapeHtml(job.title)}</div>
+                <div class="job-meta">${job.sourceType.toUpperCase()} • ${job.format} • ${job.mode}</div>
+              </div>
+              <div class="pill">${job.status}</div>
+            </div>
+            <div class="progress"><div class="progress-fill" style="width:${job.progress}%"></div></div>
+            <div class="job-meta">Postęp: ${job.progress}% • Stemy: ${job.stems.length ? job.stems.join(', ') : 'brak'}</div>
+            ${job.done ? `<div class="files">${files}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getOutputFiles(job) {
+      const ext = job.format.startsWith('mp3') ? 'mp3' : job.format === 'flac' ? 'flac' : 'wav';
+      const icons = { vocal: '🎙', drums: '🥁', bass: '🎸', melody: '🎹' };
+      const stemFiles = job.taskType === 'convert_only'
+        ? []
+        : job.stems.map(stem => ({ icon: icons[stem] || '🎧', name: `${stem}.${ext}` }));
+
+      if (job.taskType === 'split_only') return stemFiles;
+      return [{ icon: '🎧', name: `converted.${ext}` }, ...stemFiles, { icon: '📦', name: 'all_stems.zip' }];
+    }
+
+    function downloadDemo(filename) {
+      const blob = new Blob([
+        'DEMO FILE: ' + filename + '\nTo jest placeholder. Prawdziwy plik musi wygenerować backend.'
+      ], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename.replace(/\.(wav|mp3|flac|zip)$/i, '') + '_demo.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
   </script>
 </body>
